@@ -29,7 +29,6 @@ class _MainScreenState extends State<MainScreen> {
   // El orden aquí debe coincidir con el orden de los BottomNavigationBarItem
   final List<Widget> _pages = [
     SexoPage(),
-    TelefonoPage(),
     PersonaPage(), // Nueva página para Personas
     Placeholder(), // Página "Acerca de" o cualquier otra que desees
   ];
@@ -49,7 +48,6 @@ class _MainScreenState extends State<MainScreen> {
       bottomNavigationBar: BottomNavigationBar(
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Sexo'),
-          BottomNavigationBarItem(icon: Icon(Icons.phone), label: 'Telefono'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Persona'), // Nuevo ítem para Persona
           BottomNavigationBarItem(icon: Icon(Icons.info), label: 'Acerca de'),
         ],
@@ -78,27 +76,6 @@ class Sexo {
     );
   }
 }
-
-// Modelo para los datos de Sexo
-class Telefono {
-  final String idtelefono;
-  final String numero;
-
-  Telefono({required this.idtelefono, required this.numero});
-
-  factory Telefono.fromJson(Map<String, dynamic> json) {
-    return Telefono(
-      idtelefono: json['idtelefono'].toString(),
-      numero: json['numero'],
-    );
-  }
-}
-
-
-
-
-
-
 
 // Modelo para los datos de Persona
 class Persona {
@@ -239,171 +216,6 @@ class _SexoPageState extends State<SexoPage> {
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-// Página para mostrar la lista de Telefono
-class TelefonoPage extends StatefulWidget {
-  @override
-  _TelefonoPageState createState() => _TelefonoPageState();
-}
-
-class _TelefonoPageState extends State<TelefonoPage> {
-  List<Telefono> _telefonoList = [];
-  List<Telefono> _filteredTelefonoList = [];
-  String _searchText = '';
-  bool _isLoading = true; // Para mostrar un indicador de carga
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchTelefonoData();
-  }
-
-  Future<void> _fetchTelefonoData() async {
-    setState(() {
-      _isLoading = true; // Inicia la carga
-    });
-    try {
-      final response = await http.get(Uri.parse('https://educaysoft.org/apple6b/app/controllers/TelefonoController.php?action=api'));
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        setState(() {
-          _telefonoList = data.map((item) => Telefono.fromJson(item)).toList();
-          _filteredTelefonoList = _telefonoList;
-        });
-      } else {
-        throw Exception('Error al cargar datos de Telefono: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error al obtener datos de Telefono: $e');
-      // Podrías mostrar un mensaje de error al usuario aquí
-    } finally {
-      setState(() {
-        _isLoading = false; // Finaliza la carga
-      });
-    }
-  }
-
-  void _filterSearch(String query) {
-    setState(() {
-      _searchText = query;
-      _filteredTelefonoList = _telefonoList
-          .where((item) =>
-              item.numero.toLowerCase().contains(query.toLowerCase()) ||
-              item.idtelefono.contains(query))
-          .toList();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Barra de búsqueda
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: TextField(
-            onChanged: _filterSearch,
-            decoration: InputDecoration(
-              labelText: 'Buscar Telefono',
-              hintText: 'Ingrese numeros o ID',
-              prefixIcon: Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-            ),
-          ),
-        ),
-        // Lista de registros
-        Expanded(
-          child: _isLoading
-              ? Center(child: CircularProgressIndicator()) // Indicador de carga
-              : _filteredTelefonoList.isEmpty
-                  ? Center(child: Text("No hay datos de Telefono disponibles"))
-                  : ListView.builder(
-                      itemCount: _filteredTelefonoList.length,
-                      itemBuilder: (context, index) {
-                        final telefono = _filteredTelefonoList[index];
-                        return Card(
-                          margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                          elevation: 2.0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                          child: ListTile(
-                            leading: Icon(Icons.people, color: Colors.blueAccent),
-                            title: Text(telefono.numero, style: TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Text("ID: ${telefono.idtelefono}"),
-                            trailing: Icon(Icons.arrow_forward_ios, size: 16.0),
-                            onTap: () {
-                              // Acción al hacer tap en un elemento de telefono
-                              print('Telefono seleccionado: ${telefono.numero}');
-                            },
-                          ),
-                        );
-                      },
-                    ),
-        ),
-      ],
-    );
-  }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // Página para mostrar la lista de Persona
 class PersonaPage extends StatefulWidget {
