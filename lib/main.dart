@@ -7,17 +7,22 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'SICA App', // Título de la aplicación
       theme: ThemeData(primarySwatch: Colors.blue),
       home: MainScreen(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
 
 class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+
   @override
   _MainScreenState createState() => _MainScreenState();
 }
@@ -30,7 +35,8 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _pages = [
     SexoPage(),
     TelefonoPage(),
-    PersonaPage(), // Nueva página para Personas
+    PersonaPage(),
+    EstadocivilPage(), // Nueva página para Estado Civil
     Placeholder(), // Página "Acerca de" o cualquier otra que desees
   ];
 
@@ -50,13 +56,15 @@ class _MainScreenState extends State<MainScreen> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Sexo'),
           BottomNavigationBarItem(icon: Icon(Icons.phone), label: 'Telefono'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Persona'), // Nuevo ítem para Persona
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Persona'),
+          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Estado Civil'), // Nuevo ítem para Estado Civil
           BottomNavigationBarItem(icon: Icon(Icons.info), label: 'Acerca de'),
         ],
         currentIndex: _selectedIndex, // Índice del ítem seleccionado actualmente
         onTap: _onItemTapped, // Callback cuando se toca un ítem
         selectedItemColor: Colors.blue, // Color del ítem seleccionado
         unselectedItemColor: Colors.grey, // Color de los ítems no seleccionados
+        type: BottomNavigationBarType.fixed, // Asegura que todos los items se muestren
       ),
     );
   }
@@ -79,7 +87,7 @@ class Sexo {
   }
 }
 
-// Modelo para los datos de Sexo
+// Modelo para los datos de Telefono
 class Telefono {
   final String idtelefono;
   final String numero;
@@ -94,11 +102,20 @@ class Telefono {
   }
 }
 
+// Modelo para los datos de Estadocivil
+class Estadocivil {
+  final String idestadocivil;
+  final String nombre;
 
+  Estadocivil({required this.idestadocivil, required this.nombre});
 
-
-
-
+  factory Estadocivil.fromJson(Map<String, dynamic> json) {
+    return Estadocivil(
+      idestadocivil: json['idestadocivil'].toString(),
+      nombre: json['nombre'],
+    );
+  }
+}
 
 // Modelo para los datos de Persona
 class Persona {
@@ -134,6 +151,8 @@ class Persona {
 
 // Página para mostrar la lista de Sexo
 class SexoPage extends StatefulWidget {
+  const SexoPage({super.key});
+
   @override
   _SexoPageState createState() => _SexoPageState();
 }
@@ -240,18 +259,10 @@ class _SexoPageState extends State<SexoPage> {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
 // Página para mostrar la lista de Telefono
 class TelefonoPage extends StatefulWidget {
+  const TelefonoPage({super.key});
+
   @override
   _TelefonoPageState createState() => _TelefonoPageState();
 }
@@ -340,7 +351,7 @@ class _TelefonoPageState extends State<TelefonoPage> {
                             borderRadius: BorderRadius.circular(10.0),
                           ),
                           child: ListTile(
-                            leading: Icon(Icons.people, color: Colors.blueAccent),
+                            leading: Icon(Icons.phone, color: Colors.blueAccent), // Icono cambiado
                             title: Text(telefono.numero, style: TextStyle(fontWeight: FontWeight.bold)),
                             subtitle: Text("ID: ${telefono.idtelefono}"),
                             trailing: Icon(Icons.arrow_forward_ios, size: 16.0),
@@ -358,55 +369,120 @@ class _TelefonoPageState extends State<TelefonoPage> {
   }
 }
 
+// Página para mostrar la lista de Estadocivil
+class EstadocivilPage extends StatefulWidget {
+  const EstadocivilPage({super.key});
 
+  @override
+  _EstadocivilPageState createState() => _EstadocivilPageState();
+}
 
+class _EstadocivilPageState extends State<EstadocivilPage> {
+  List<Estadocivil> _estadocivilList = [];
+  List<Estadocivil> _filteredEstadocivilList = [];
+  String _searchText = '';
+  bool _isLoading = true; // Para mostrar un indicador de carga
 
+  @override
+  void initState() {
+    super.initState();
+    _fetchEstadocivilData();
+  }
 
+  Future<void> _fetchEstadocivilData() async {
+    setState(() {
+      _isLoading = true; // Inicia la carga
+    });
+    try {
+      final response = await http.get(Uri.parse('https://educaysoft.org/apple6b/app/controllers/EstadocivilController.php?action=api'));
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        setState(() {
+          _estadocivilList = data.map((item) => Estadocivil.fromJson(item)).toList();
+          _filteredEstadocivilList = _estadocivilList;
+        });
+      } else {
+        throw Exception('Error al cargar datos de Estadocivil: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error al obtener datos de Estadocivil: $e');
+      // Podrías mostrar un mensaje de error al usuario aquí
+    } finally {
+      setState(() {
+        _isLoading = false; // Finaliza la carga
+      });
+    }
+  }
 
+  void _filterSearch(String query) {
+    setState(() {
+      _searchText = query;
+      _filteredEstadocivilList = _estadocivilList
+          .where((item) =>
+              item.nombre.toLowerCase().contains(query.toLowerCase()) ||
+              item.idestadocivil.contains(query))
+          .toList();
+    });
+  }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // Barra de búsqueda
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: TextField(
+            onChanged: _filterSearch,
+            decoration: InputDecoration(
+              labelText: 'Buscar Estado Civil',
+              hintText: 'Ingrese nombres o ID',
+              prefixIcon: Icon(Icons.search),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+            ),
+          ),
+        ),
+        // Lista de registros
+        Expanded(
+          child: _isLoading
+              ? Center(child: CircularProgressIndicator()) // Indicador de carga
+              : _filteredEstadocivilList.isEmpty
+                  ? Center(child: Text("No hay datos de Estado Civil disponibles"))
+                  : ListView.builder(
+                      itemCount: _filteredEstadocivilList.length,
+                      itemBuilder: (context, index) {
+                        final estadocivil = _filteredEstadocivilList[index];
+                        return Card(
+                          margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                          elevation: 2.0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          child: ListTile(
+                            leading: Icon(Icons.favorite, color: Colors.redAccent), // Icono
+                            title: Text(estadocivil.nombre, style: TextStyle(fontWeight: FontWeight.bold)),
+                            subtitle: Text("ID: ${estadocivil.idestadocivil}"),
+                            trailing: Icon(Icons.arrow_forward_ios, size: 16.0),
+                            onTap: () {
+                              // Acción al hacer tap en un elemento de estado civil
+                              print('Estado Civil seleccionado: ${estadocivil.nombre}');
+                            },
+                          ),
+                        );
+                      },
+                    ),
+        ),
+      ],
+    );
+  }
+}
 
 // Página para mostrar la lista de Persona
 class PersonaPage extends StatefulWidget {
+  const PersonaPage({super.key});
+
   @override
   _PersonaPageState createState() => _PersonaPageState();
 }
@@ -471,7 +547,7 @@ class _PersonaPageState extends State<PersonaPage> {
             onChanged: _filterSearch,
             decoration: InputDecoration(
               labelText: 'Buscar Persona',
-              hintText: 'Ingrese nombres, apellidos o cédula',
+              hintText: 'Ingrese nombres, apellidos o fecha', // Actualizado
               prefixIcon: Icon(Icons.search),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10.0),
@@ -501,8 +577,9 @@ class _PersonaPageState extends State<PersonaPage> {
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text("Fechanacimiento: ${persona.fechanacimiento}"),
-                                Text("TSexo: ${persona.elsexo}"),
+                                Text("ID: ${persona.idpersona}"), // Agregado ID para claridad
+                                Text("Fecha Nacimiento: ${persona.fechanacimiento}"),
+                                Text("Sexo: ${persona.elsexo}"),
                                 Text("Estado Civil: ${persona.elestadocivil}"),
                               ],
                             ),
@@ -520,4 +597,3 @@ class _PersonaPageState extends State<PersonaPage> {
     );
   }
 }
-
