@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -740,17 +741,27 @@ class _PersonaPageState extends State<PersonaPage> {
   List<Persona> _personaList = [];
   List<Persona> _filteredPersonaList = [];
   String _searchText = '';
-  bool _isLoading = true; // Para mostrar un indicador de carga
+  bool _isLoading = true;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _fetchPersonaData();
+    _searchController.addListener(() {
+        _filterSearch(_searchController.text);
+    });
+  }
+
+ @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchPersonaData() async {
     setState(() {
-      _isLoading = true; // Inicia la carga
+      _isLoading = true;
     });
     try {
       final response = await http.get(
@@ -771,10 +782,12 @@ class _PersonaPageState extends State<PersonaPage> {
       }
     } catch (e) {
       print('Error al obtener datos de Persona: $e');
-      // Podrías mostrar un mensaje de error al usuario aquí
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al cargar datos: $e'), backgroundColor: Colors.redAccent,),
+      );
     } finally {
       setState(() {
-        _isLoading = false; // Finaliza la carga
+        _isLoading = false;
       });
     }
   }
@@ -782,93 +795,185 @@ class _PersonaPageState extends State<PersonaPage> {
   void _filterSearch(String query) {
     setState(() {
       _searchText = query;
-      _filteredPersonaList =
-          _personaList
-              .where(
-                (item) =>
-                    item.nombres.toLowerCase().contains(query.toLowerCase()) ||
-                    item.apellidos.toLowerCase().contains(
-                      query.toLowerCase(),
-                    ) ||
-                    item.fechanacimiento.contains(query),
-              )
-              .toList();
+      _filteredPersonaList = _personaList
+          .where(
+            (item) =>
+                item.nombres.toLowerCase().contains(query.toLowerCase()) ||
+                item.apellidos.toLowerCase().contains(query.toLowerCase()) ||
+                item.idpersona.contains(query) || // Buscar por ID
+                item.fechanacimiento.contains(query),
+          )
+          .toList();
     });
   }
+
+  // Función para mostrar detalles (ejemplo)
+  void _showPersonaDetails(Persona persona) {
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+              title: Text("${persona.nombres} ${persona.apellidos}"),
+              content: SingleChildScrollView(
+                  child: ListBody(
+                      children: <Widget>[
+                          Text("ID: ${persona.idpersona}"),
+                          Text("Fecha Nacimiento: ${persona.fechanacimiento}"),
+                          Text("Sexo: ${persona.elsexo}"),
+                          Text("Estado Civil: ${persona.elestadocivil}"),
+                          // Aquí podrías añadir más detalles o acciones
+                      ],
+                  ),
+              ),
+              actions: <Widget>[
+                  TextButton(
+                      child: const Text('Cerrar'),
+                      onPressed: () {
+                          Navigator.of(context).pop();
+                      },
+                  ),
+              ],
+          ),
+      );
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Barra de búsqueda
+        // Barra de búsqueda mejorada
         Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(16.0),
           child: TextField(
-            onChanged: _filterSearch,
+            controller: _searchController,
             decoration: InputDecoration(
               labelText: 'Buscar Persona',
-              hintText: 'Ingrese nombres, apellidos o fecha', // Actualizado
-              prefixIcon: Icon(Icons.search),
+              hintText: 'Ingrese nombres, apellidos, ID o fecha...',
+              prefixIcon: Icon(Icons.search, color: Theme.of(context).primaryColor),
+              suffixIcon: _searchText.isNotEmpty
+                  ? IconButton(
+                      icon: Icon(Icons.clear),
+                      onPressed: () {
+                         _searchController.clear();
+                         _filterSearch('');
+                      },
+                    )
+                  : null,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10.0),
+                borderRadius: BorderRadius.circular(30.0), // Bordes redondeados
+                borderSide: BorderSide.none, // Sin borde visible
               ),
+              filled: true,
+              fillColor: Colors.grey[200], // Fondo sutil
+              contentPadding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 20.0),
             ),
           ),
         ),
         // Lista de registros
         Expanded(
-          child:
-              _isLoading
+          child: _isLoading
+              ? Center(child: CircularProgressIndicator())
+              : _filteredPersonaList.isEmpty
                   ? Center(
-                    child: CircularProgressIndicator(),
-                  ) // Indicador de carga
-                  : _filteredPersonaList.isEmpty
-                  ? Center(child: Text("No hay datos de Persona disponibles"))
+                      child: Text(
+                        _personaList.isEmpty
+                            ? "No hay datos de Personas disponibles."
+                            : "No se encontraron coincidencias.",
+                        style: TextStyle(fontSize: 16.0, color: Colors.grey[600]),
+                      ),
+                    )
                   : ListView.builder(
-                    itemCount: _filteredPersonaList.length,
-                    itemBuilder: (context, index) {
-                      final persona = _filteredPersonaList[index];
-                      return Card(
-                        margin: EdgeInsets.symmetric(
-                          horizontal: 8.0,
-                          vertical: 4.0,
-                        ),
-                        elevation: 2.0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        child: ListTile(
-                          leading: Icon(Icons.person, color: Colors.green),
-                          title: Text(
-                            "${persona.nombres} ${persona.apellidos}",
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                      padding: EdgeInsets.symmetric(horizontal: 8.0), // Padding horizontal para la lista
+                      itemCount: _filteredPersonaList.length,
+                      itemBuilder: (context, index) {
+                        final persona = _filteredPersonaList[index];
+                        final initials = persona.nombres.isNotEmpty && persona.apellidos.isNotEmpty
+                            ? persona.nombres[0] + persona.apellidos[0]
+                            : 'P';
+                        final avatarColor = Colors.primaries[persona.idpersona.hashCode % Colors.primaries.length].shade100;
+                        final avatarTextColor = Colors.primaries[persona.idpersona.hashCode % Colors.primaries.length].shade700;
+
+
+                        return Card(
+                          margin: EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
+                          elevation: 3.0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.0),
                           ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "ID: ${persona.idpersona}",
-                              ), // Agregado ID para claridad
-                              Text(
-                                "Fecha Nacimiento: ${persona.fechanacimiento}",
+                          child: InkWell( // Hace la tarjeta tappable
+                            onTap: () => _showPersonaDetails(persona),
+                            borderRadius: BorderRadius.circular(12.0),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Row(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 28,
+                                    backgroundColor: avatarColor,
+                                    child: Text(
+                                      initials.toUpperCase(),
+                                      style: TextStyle(
+                                          fontSize: 20,
+                                          color: avatarTextColor,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  SizedBox(width: 15.0),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "${persona.nombres} ${persona.apellidos}",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 17.0,
+                                              color: Colors.black87),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        SizedBox(height: 5.0),
+                                        Text(
+                                          "ID: ${persona.idpersona} | Nac: ${persona.fechanacimiento}",
+                                          style: TextStyle(color: Colors.grey[700], fontSize: 13.0),
+                                        ),
+                                        SizedBox(height: 3.0),
+                                         Wrap( // Usa Wrap para que no se desborde si no cabe
+                                          spacing: 8.0, // Espacio horizontal
+                                          runSpacing: 4.0, // Espacio vertical
+                                          children: [
+                                              Chip(
+                                                label: Text(persona.elsexo, style: TextStyle(fontSize: 11)),
+                                                backgroundColor: persona.elsexo.toLowerCase() == 'masculino' ? Colors.blue.shade50 : Colors.pink.shade50,
+                                                avatar: Icon(persona.elsexo.toLowerCase() == 'masculino' ? Icons.male : Icons.female, size: 16),
+                                                padding: EdgeInsets.symmetric(horizontal: 4.0, vertical: 0),
+                                                labelPadding: EdgeInsets.only(left: 2.0, right: 4.0),
+                                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                              ),
+                                              Chip(
+                                                label: Text(persona.elestadocivil, style: TextStyle(fontSize: 11)),
+                                                backgroundColor: Colors.grey.shade100,
+                                                avatar: Icon(Icons.favorite_border, size: 16, color: Colors.red.shade300,),
+                                                padding: EdgeInsets.symmetric(horizontal: 4.0, vertical: 0),
+                                                labelPadding: EdgeInsets.only(left: 2.0, right: 4.0),
+                                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                              ),
+                                          ],
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                  Icon(Icons.arrow_forward_ios, size: 16.0, color: Colors.grey.shade400),
+                                ],
                               ),
-                              Text("Sexo: ${persona.elsexo}"),
-                              Text("Estado Civil: ${persona.elestadocivil}"),
-                            ],
+                            ),
                           ),
-                          trailing: Icon(Icons.arrow_forward_ios, size: 16.0),
-                          onTap: () {
-                            // Acción al hacer tap en un elemento de persona
-                            print(
-                              'Persona seleccionada: ${persona.nombres} ${persona.apellidos}',
-                            );
-                          },
-                        ),
-                      );
-                    },
-                  ),
-        ),
+                        );
+                      },
+                    ),
+                     ),
       ],
     );
   }
 }
+
