@@ -7,6 +7,8 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -18,6 +20,8 @@ class MyApp extends StatelessWidget {
 }
 
 class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+
   @override
   _MainScreenState createState() => _MainScreenState();
 }
@@ -48,10 +52,14 @@ class _MainScreenState extends State<MainScreen> {
       bottomNavigationBar: BottomNavigationBar(
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Sexo'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Persona'), // Nuevo ítem para Persona
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Persona',
+          ), // Nuevo ítem para Persona
           BottomNavigationBarItem(icon: Icon(Icons.info), label: 'Acerca de'),
         ],
-        currentIndex: _selectedIndex, // Índice del ítem seleccionado actualmente
+        currentIndex:
+            _selectedIndex, // Índice del ítem seleccionado actualmente
         onTap: _onItemTapped, // Callback cuando se toca un ítem
         selectedItemColor: Colors.blue, // Color del ítem seleccionado
         unselectedItemColor: Colors.grey, // Color de los ítems no seleccionados
@@ -70,10 +78,7 @@ class Sexo {
   Sexo({required this.idsexo, required this.nombre});
 
   factory Sexo.fromJson(Map<String, dynamic> json) {
-    return Sexo(
-      idsexo: json['idsexo'].toString(),
-      nombre: json['nombre'],
-    );
+    return Sexo(idsexo: json['idsexo'].toString(), nombre: json['nombre']);
   }
 }
 
@@ -111,6 +116,8 @@ class Persona {
 
 // Página para mostrar la lista de Sexo
 class SexoPage extends StatefulWidget {
+  const SexoPage({super.key});
+
   @override
   _SexoPageState createState() => _SexoPageState();
 }
@@ -132,7 +139,15 @@ class _SexoPageState extends State<SexoPage> {
       _isLoading = true; // Inicia la carga
     });
     try {
+<<<<<<< HEAD
       final response = await http.get(Uri.parse('https://educaysoft.org/ibm6b/app/controllers/SexoController.php?action=api'));
+=======
+      final response = await http.get(
+        Uri.parse(
+          'https://educaysoft.org/apple6b/app/controllers/SexoController.php?action=api',
+        ),
+      );
+>>>>>>> 8bf4f60b626fa305cfbcff9ddf4910bce1cea6d5
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         setState(() {
@@ -140,7 +155,9 @@ class _SexoPageState extends State<SexoPage> {
           _filteredSexoList = _sexoList;
         });
       } else {
-        throw Exception('Error al cargar datos de Sexo: ${response.statusCode}');
+        throw Exception(
+          'Error al cargar datos de Sexo: ${response.statusCode}',
+        );
       }
     } catch (e) {
       print('Error al obtener datos de Sexo: $e');
@@ -155,11 +172,14 @@ class _SexoPageState extends State<SexoPage> {
   void _filterSearch(String query) {
     setState(() {
       _searchText = query;
-      _filteredSexoList = _sexoList
-          .where((item) =>
-              item.nombre.toLowerCase().contains(query.toLowerCase()) ||
-              item.idsexo.contains(query))
-          .toList();
+      _filteredSexoList =
+          _sexoList
+              .where(
+                (item) =>
+                    item.nombre.toLowerCase().contains(query.toLowerCase()) ||
+                    item.idsexo.contains(query),
+              )
+              .toList();
     });
   }
 
@@ -184,33 +204,42 @@ class _SexoPageState extends State<SexoPage> {
         ),
         // Lista de registros
         Expanded(
-          child: _isLoading
-              ? Center(child: CircularProgressIndicator()) // Indicador de carga
-              : _filteredSexoList.isEmpty
+          child:
+              _isLoading
+                  ? Center(
+                    child: CircularProgressIndicator(),
+                  ) // Indicador de carga
+                  : _filteredSexoList.isEmpty
                   ? Center(child: Text("No hay datos de Sexo disponibles"))
                   : ListView.builder(
-                      itemCount: _filteredSexoList.length,
-                      itemBuilder: (context, index) {
-                        final sexo = _filteredSexoList[index];
-                        return Card(
-                          margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                          elevation: 2.0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.0),
+                    itemCount: _filteredSexoList.length,
+                    itemBuilder: (context, index) {
+                      final sexo = _filteredSexoList[index];
+                      return Card(
+                        margin: EdgeInsets.symmetric(
+                          horizontal: 8.0,
+                          vertical: 4.0,
+                        ),
+                        elevation: 2.0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        child: ListTile(
+                          leading: Icon(Icons.people, color: Colors.blueAccent),
+                          title: Text(
+                            sexo.nombre,
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          child: ListTile(
-                            leading: Icon(Icons.people, color: Colors.blueAccent),
-                            title: Text(sexo.nombre, style: TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Text("ID: ${sexo.idsexo}"),
-                            trailing: Icon(Icons.arrow_forward_ios, size: 16.0),
-                            onTap: () {
-                              // Acción al hacer tap en un elemento de sexo
-                              print('Sexo seleccionado: ${sexo.nombre}');
-                            },
-                          ),
-                        );
-                      },
-                    ),
+                          subtitle: Text("ID: ${sexo.idsexo}"),
+                          trailing: Icon(Icons.arrow_forward_ios, size: 16.0),
+                          onTap: () {
+                            // Acción al hacer tap en un elemento de sexo
+                            print('Sexo seleccionado: ${sexo.nombre}');
+                          },
+                        ),
+                      );
+                    },
+                  ),
         ),
       ],
     );
@@ -219,6 +248,8 @@ class _SexoPageState extends State<SexoPage> {
 
 // Página para mostrar la lista de Persona
 class PersonaPage extends StatefulWidget {
+  const PersonaPage({super.key});
+
   @override
   _PersonaPageState createState() => _PersonaPageState();
 }
@@ -240,7 +271,15 @@ class _PersonaPageState extends State<PersonaPage> {
       _isLoading = true; // Inicia la carga
     });
     try {
+<<<<<<< HEAD
       final response = await http.get(Uri.parse('https://educaysoft.org/ibm6b/app/controllers/PersonaController.php?action=api'));
+=======
+      final response = await http.get(
+        Uri.parse(
+          'https://educaysoft.org/apple6b/app/controllers/PersonaController.php?action=api',
+        ),
+      );
+>>>>>>> 8bf4f60b626fa305cfbcff9ddf4910bce1cea6d5
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         setState(() {
@@ -248,7 +287,9 @@ class _PersonaPageState extends State<PersonaPage> {
           _filteredPersonaList = _personaList;
         });
       } else {
-        throw Exception('Error al cargar datos de Persona: ${response.statusCode}');
+        throw Exception(
+          'Error al cargar datos de Persona: ${response.statusCode}',
+        );
       }
     } catch (e) {
       print('Error al obtener datos de Persona: $e');
@@ -263,12 +304,17 @@ class _PersonaPageState extends State<PersonaPage> {
   void _filterSearch(String query) {
     setState(() {
       _searchText = query;
-      _filteredPersonaList = _personaList
-          .where((item) =>
-              item.nombres.toLowerCase().contains(query.toLowerCase()) ||
-              item.apellidos.toLowerCase().contains(query.toLowerCase()) ||
-              item.fechanacimiento.contains(query))
-          .toList();
+      _filteredPersonaList =
+          _personaList
+              .where(
+                (item) =>
+                    item.nombres.toLowerCase().contains(query.toLowerCase()) ||
+                    item.apellidos.toLowerCase().contains(
+                      query.toLowerCase(),
+                    ) ||
+                    item.fechanacimiento.contains(query),
+              )
+              .toList();
     });
   }
 
@@ -293,43 +339,55 @@ class _PersonaPageState extends State<PersonaPage> {
         ),
         // Lista de registros
         Expanded(
-          child: _isLoading
-              ? Center(child: CircularProgressIndicator()) // Indicador de carga
-              : _filteredPersonaList.isEmpty
+          child:
+              _isLoading
+                  ? Center(
+                    child: CircularProgressIndicator(),
+                  ) // Indicador de carga
+                  : _filteredPersonaList.isEmpty
                   ? Center(child: Text("No hay datos de Persona disponibles"))
                   : ListView.builder(
-                      itemCount: _filteredPersonaList.length,
-                      itemBuilder: (context, index) {
-                        final persona = _filteredPersonaList[index];
-                        return Card(
-                          margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                          elevation: 2.0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.0),
+                    itemCount: _filteredPersonaList.length,
+                    itemBuilder: (context, index) {
+                      final persona = _filteredPersonaList[index];
+                      return Card(
+                        margin: EdgeInsets.symmetric(
+                          horizontal: 8.0,
+                          vertical: 4.0,
+                        ),
+                        elevation: 2.0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        child: ListTile(
+                          leading: Icon(Icons.person, color: Colors.green),
+                          title: Text(
+                            "${persona.nombres} ${persona.apellidos}",
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          child: ListTile(
-                            leading: Icon(Icons.person, color: Colors.green),
-                            title: Text("${persona.nombres} ${persona.apellidos}", style: TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("Fechanacimiento: ${persona.fechanacimiento}"),
-                                Text("TSexo: ${persona.elsexo}"),
-                                Text("Estado Civil: ${persona.elestadocivil}"),
-                              ],
-                            ),
-                            trailing: Icon(Icons.arrow_forward_ios, size: 16.0),
-                            onTap: () {
-                              // Acción al hacer tap en un elemento de persona
-                              print('Persona seleccionada: ${persona.nombres} ${persona.apellidos}');
-                            },
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Fechanacimiento: ${persona.fechanacimiento}",
+                              ),
+                              Text("TSexo: ${persona.elsexo}"),
+                              Text("Estado Civil: ${persona.elestadocivil}"),
+                            ],
                           ),
-                        );
-                      },
-                    ),
+                          trailing: Icon(Icons.arrow_forward_ios, size: 16.0),
+                          onTap: () {
+                            // Acción al hacer tap en un elemento de persona
+                            print(
+                              'Persona seleccionada: ${persona.nombres} ${persona.apellidos}',
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
         ),
       ],
     );
   }
 }
-
