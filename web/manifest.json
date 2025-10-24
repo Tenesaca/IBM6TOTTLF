@@ -1,6 +1,6 @@
 {
-    "name": "app_apple6b",
-    "short_name": "app_apple6b",
+    "name": "app_ibm6b",
+    "short_name": "app_ibm6b",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

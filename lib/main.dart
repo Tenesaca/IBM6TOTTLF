@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'SICA App', // Título de la aplicación
+      title: 'SICA App (IBM6TOBTTLF)', // Título de la aplicación
       theme: ThemeData(primarySwatch: Colors.blue),
       home: MainScreen(),
     );
@@ -24,7 +24,6 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-
   // Lista de páginas que se mostrarán en el cuerpo del Scaffold
   // El orden aquí debe coincidir con el orden de los BottomNavigationBarItem
   final List<Widget> _pages = [
@@ -44,7 +43,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("SICA - Registro")), // Título de la AppBar
+      appBar: AppBar(title: Text("SICA - Registro(IBM6TOB)")), // Título de la AppBar
       body: _pages[_selectedIndex], // Muestra la página seleccionada
       bottomNavigationBar: BottomNavigationBar(
         items: const [
@@ -155,7 +154,7 @@ class _SexoPageState extends State<SexoPage> {
       _isLoading = true; // Inicia la carga
     });
     try {
-      final response = await http.get(Uri.parse('https://educaysoft.org/apple6b/app/controllers/SexoController.php?action=api'));
+      final response = await http.get(Uri.parse('https://educaysoft.org/ibm6b/app/controllers/SexoController.php?action=api'));
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         setState(() {
@@ -241,15 +240,6 @@ class _SexoPageState extends State<SexoPage> {
 }
 
 
-
-
-
-
-
-
-
-
-
 // Página para mostrar la lista de Telefono
 class TelefonoPage extends StatefulWidget {
   @override
@@ -273,7 +263,7 @@ class _TelefonoPageState extends State<TelefonoPage> {
       _isLoading = true; // Inicia la carga
     });
     try {
-      final response = await http.get(Uri.parse('https://educaysoft.org/apple6b/app/controllers/TelefonoController.php?action=api'));
+      final response = await http.get(Uri.parse('https://educaysoft.org/ibm6b/app/controllers/TelefonoController.php?action=api'));
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         setState(() {
@@ -358,53 +348,6 @@ class _TelefonoPageState extends State<TelefonoPage> {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Página para mostrar la lista de Persona
 class PersonaPage extends StatefulWidget {
   @override
@@ -428,7 +371,7 @@ class _PersonaPageState extends State<PersonaPage> {
       _isLoading = true; // Inicia la carga
     });
     try {
-      final response = await http.get(Uri.parse('https://educaysoft.org/apple6b/app/controllers/PersonaController.php?action=api'));
+      final response = await http.get(Uri.parse('https://educaysoft.org/ibm6b/app/controllers/PersonaController.php?action=api'));
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         setState(() {
